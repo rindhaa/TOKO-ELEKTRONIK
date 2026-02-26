@@ -340,30 +340,36 @@ function Dashboard() {
               {filteredProducts.map(product => (
                 <div key={product.id} className="product-card">
                   {/* Product Image */}
-                  <div className="product-image-container">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="product-image"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://placehold.co/400x300/7b68ee/ffffff?text=${encodeURIComponent(product.name)}`;
-                      }}
-                    />
-                    <div className="product-badge">
-                      {product.is_available ? (
-                        <span className="badge-available">
-                          <span className="badge-dot"></span>
-                          Tersedia
-                        </span>
-                      ) : (
-                        <span className="badge-unavailable">Habis</span>
-                      )}
-                    </div>
-                    <div className="product-category-badge">
-                      {getCategoryIcon(product.category_name)} {product.category_name}
-                    </div>
-                  </div>
+<div className="product-image-container">
+  <img 
+    src={product.image} 
+    alt={product.name}
+    className="product-image"
+    onError={(e) => {
+      e.target.onerror = null;
+      e.target.src = `https://placehold.co/400x300/7b68ee/ffffff?text=${encodeURIComponent(product.name)}`;
+    }}
+  />
+  
+  {/* WISHLIST BUTTON - TAMBAHKAN INI */}
+  <button className="wishlist-btn">
+    ❤️
+  </button>
+  
+  {/* STOCK BADGE - GANTI product-badge yang lama DENGAN INI */}
+  <div className={`stock-badge ${
+    product.stock === 0 ? 'stock-empty' :
+    product.stock < 5 ? 'stock-low' :
+    product.stock <= 10 ? 'stock-medium' : 'stock-high'
+  }`}>
+    {product.stock === 0 ? 'HABIS' : `Stok ${product.stock}`}
+  </div>
+  
+  {/* CATEGORY BADGE - TETAP PERTAHANKAN */}
+  <div className="product-category-badge">
+    {getCategoryIcon(product.category_name)} {product.category_name}
+  </div>
+</div>
                   
                   {/* Product Content */}
                   <div className="product-content">

@@ -38,6 +38,9 @@ function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
+      // ALERT UNTUK LOGIN BERHASIL 
+      window.alert(`Login Berhasil! Selamat datang ${user.username || user.name || "Artic Life"}`);
+
       // Redirect berdasarkan role dari database
       if (user.role === "Admin" || user.role === "Kasir") {
         navigate("/dashboard");
@@ -49,11 +52,15 @@ function Login() {
 
     } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err.response?.data?.message || 
-        err.response?.data?.error || 
-        "Login gagal. Periksa username dan password."
-      );
+      
+      // ALERT UNTUK LOGIN GAGAL
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          "Login gagal. Periksa username dan password.";
+      
+      window.alert(errorMessage);
+      setError(errorMessage);
+      
     } finally {
       setLoading(false);
     }
