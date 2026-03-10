@@ -147,22 +147,22 @@ function Dashboard() {
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
-    
+
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        
+
         // Menggunakan data produk dan kategori dari database
         setProducts(databaseProducts);
         setCategories(databaseCategories);
-        
+
         // Simulasi loading
         setLoading(true);
         setTimeout(() => {
           setLoading(false);
         }, 1000);
-        
+
       } catch (error) {
         navigate("/");
       }
@@ -198,17 +198,17 @@ function Dashboard() {
 
   // Filter products berdasarkan kategori dan pencarian
   const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === "all" || 
-                           product.category_name === selectedCategory;
+    const matchesCategory = selectedCategory === "all" ||
+      product.category_name === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Fungsi untuk menambahkan produk ke keranjang
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
+
     if (existingItem) {
       setCart(cart.map(item =>
         item.id === product.id
@@ -218,7 +218,7 @@ function Dashboard() {
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
-    
+
     alert(`✅ ${product.name} ditambahkan ke keranjang!`);
   };
 
@@ -233,7 +233,7 @@ function Dashboard() {
       alert("Keranjang masih kosong!");
       return;
     }
-    
+
     alert(`🛒 Checkout berhasil! Total: ${formatCurrency(getCartTotal())}`);
     setCart([]);
   };
@@ -258,7 +258,7 @@ function Dashboard() {
             <div className="brand-subtext">Toko Elektronik Premium</div>
           </div>
         </div>
-        
+
         <div className="nav-center">
           <div className="cart-info">
             <span className="cart-icon">🛒</span>
@@ -266,7 +266,7 @@ function Dashboard() {
             <span className="cart-total">{formatCurrency(getCartTotal())}</span>
           </div>
         </div>
-        
+
         <div className="user-profile">
           <div className="user-avatar">
             {user?.name?.charAt(0) || "A"}
@@ -291,7 +291,23 @@ function Dashboard() {
           <p className="hero-subtitle">
             Temukan elektronik terbaru dengan kualitas terbaik dan harga kompetitif
           </p>
-          </div> 
+
+          {/* SEARCH BAR - TAMBAHKAN INI */}
+          <div className="search-container">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Cari produk elektronik..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="search-button">
+              🔍 Cari
+            </button>
+          </div>
+        </div>
+
+
 
 
         {/* Category Filters */}
@@ -306,7 +322,7 @@ function Dashboard() {
               <h3>Semua Produk</h3>
               <p>{products.length} items</p>
             </button>
-            
+
             {categories.map(category => (
               <button
                 key={category.id}
@@ -341,8 +357,8 @@ function Dashboard() {
                 <div key={product.id} className="product-card">
                   {/* Product Image */}
                   <div className="product-image-container">
-                    <img 
-                      src={product.image} 
+                    <img
+                      src={product.image}
                       alt={product.name}
                       className="product-image"
                       onError={(e) => {
@@ -364,15 +380,15 @@ function Dashboard() {
                       {getCategoryIcon(product.category_name)} {product.category_name}
                     </div>
                   </div>
-                  
+
                   {/* Product Content */}
                   <div className="product-content">
                     <h3 className="product-title">{product.name}</h3>
-                    
+
                     <p className="product-description">
                       {product.description}
                     </p>
-                    
+
                     {/* Product Specs */}
                     <div className="product-specs">
                       {product.specs && product.specs.map((spec, index) => (
@@ -381,7 +397,7 @@ function Dashboard() {
                         </span>
                       ))}
                     </div>
-                    
+
                     <div className="product-footer">
                       <div className="price-section">
                         <div className="product-price">
@@ -394,9 +410,9 @@ function Dashboard() {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="product-actions">
-                        <button 
+                        <button
                           className="action-btn buy-btn"
                           onClick={() => addToCart(product)}
                           disabled={!product.is_available || product.stock === 0}
@@ -429,7 +445,7 @@ function Dashboard() {
               <div className="cart-total-amount">
                 Total: <strong>{formatCurrency(getCartTotal())}</strong>
               </div>
-              <button 
+              <button
                 className="checkout-btn"
                 onClick={proceedToCheckout}
               >

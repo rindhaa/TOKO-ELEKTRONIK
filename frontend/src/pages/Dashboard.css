@@ -271,11 +271,13 @@ body {
 .category-card-large h3 {
   font-size: 16px;
   font-weight: 600;
+   color: #222;
 }
 
 .category-card-large p {
   font-size: 13px;
   color: #777;
+  color: #333; 
 }
 
 .category-card-large.active p {
@@ -713,4 +715,64 @@ body {
 /* Hapus product-badge yang lama */
 .product-badge {
   display: none;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-container {
+  display: flex;
+  max-width: 500px;
+  margin: 25px auto 0;
+  gap: 10px;
+  padding: 0 15px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+  color: #333; 
+}
+
+.search-input:focus {
+  border-color: #7b68ee;
+  box-shadow: 0 0 0 4px rgba(123, 104, 238, 0.1);
+}
+
+.search-input::placeholder {
+  color: #a0aec0;
+}
+
+.search-button {
+  padding: 14px 25px;
+  background: linear-gradient(135deg, #7b68ee, #9370db);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(123, 104, 238, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .search-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .search-button {
+    width: 100%;
+  }
 }
