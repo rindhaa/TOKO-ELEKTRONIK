@@ -2,6 +2,7 @@ import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ function Login() {
 
       // Simpan data dari response backend
       const { token, user } = response.data;
-      
+
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
@@ -52,15 +53,15 @@ function Login() {
 
     } catch (err) {
       console.error("Login error:", err);
-      
+
       // ALERT UNTUK LOGIN GAGAL
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Login gagal. Periksa username dan password.";
-      
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Login gagal. Periksa username dan password.";
+
       window.alert(errorMessage);
       setError(errorMessage);
-      
+
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ function Login() {
       {/* Background Stars */}
       <div className="stars">
         {stars.map(star => (
-          <div 
+          <div
             key={star.id}
             className="star"
             style={{
@@ -94,25 +95,25 @@ function Login() {
           />
         ))}
       </div>
-      
+
       {/* Floating Tech Bubbles */}
       <div className="tech-bubble bubble-1"></div>
       <div className="tech-bubble bubble-2"></div>
       <div className="tech-bubble bubble-3"></div>
-      
+
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-header">
           <div className="login-icon">🖥️</div>
           <h2>Electronic Store</h2>
           <p className="login-subtitle">Login Dashboard Management</p>
         </div>
-        
+
         {error && (
           <div className="error-message show">
             {error}
           </div>
         )}
-        
+
         <div className="input-group">
           <span className="input-icon">👤</span>
           <input
@@ -126,7 +127,7 @@ function Login() {
             autoComplete="username"
           />
         </div>
-        
+
         <div className="input-group">
           <span className="input-icon">🔒</span>
           <input
@@ -140,9 +141,9 @@ function Login() {
             autoComplete="current-password"
           />
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           className={`login-button ${loading ? 'loading' : ''}`}
           disabled={loading}
         >
@@ -155,8 +156,11 @@ function Login() {
             "Login"
           )}
         </button>
-        
+
         <div className="login-footer">
+          <p style={{ marginBottom: '15px' }}>
+            Belum punya akun? <Link to="/register">Daftar di sini</Link>
+          </p>
           <p className="demo-title">Database Credentials:</p>
           <div className="demo-credentials">
             <div><small>Data langsung dari PostgreSQL database</small></div>

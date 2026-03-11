@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/LoginPage';
 import Dashboard from './pages/DashboardPage';
 import './App.css';
+import Register from './pages/RegisterPage';
 
 // Layout wrapper untuk pastikan scroll bekerja
 const Layout = ({ children }) => {
@@ -28,6 +29,9 @@ function App() {
           
           {/* Route untuk dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Route untuk halaman register - TAMBAHKAN INI */}
+          <Route path="/register" element={<Register />} />
           
           {/* Redirect root (/) ke /login */}
           <Route path="/" element={<Navigate to="/login" />} />

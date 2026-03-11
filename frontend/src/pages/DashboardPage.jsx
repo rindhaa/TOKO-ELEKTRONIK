@@ -1,6 +1,7 @@
 import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -12,139 +13,6 @@ function Dashboard() {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
-  // Data produk sesuai database PostgreSQL toko elektronik
-  const databaseProducts = [
-    {
-      id: 1,
-      name: "iPhone 15 Pro",
-      category_id: 1,
-      description: "Smartphone Apple dengan chip A17 Pro, kamera 48MP",
-      price: 21000000,
-      stock: 10,
-      is_available: true,
-      category_name: "Handphone",
-      image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
-      specs: ["Chip A17 Pro", "Kamera 48MP", "Baterai 1 hari", "iOS 17"]
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S24 Ultra",
-      category_id: 1,
-      description: "Flagship Samsung dengan kamera 200MP, S Pen",
-      price: 19500000,
-      stock: 8,
-      is_available: true,
-      category_name: "Handphone",
-      image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=300&fit=crop",
-      specs: ["Kamera 200MP", "S Pen", "Snapdragon 8 Gen 3", "5000mAh"]
-    },
-    {
-      id: 3,
-      name: "Xiaomi 14 Pro",
-      category_id: 1,
-      description: "Smartphone flagship dengan Snapdragon 8 Gen 3, kamera Leica",
-      price: 15000000,
-      stock: 12,
-      is_available: true,
-      category_name: "Handphone",
-      image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&h=300&fit=crop",
-      specs: ["Snapdragon 8 Gen 3", "Kamera Leica", "120W Charging", "Layar AMOLED"]
-    },
-    {
-      id: 4,
-      name: "MacBook Air M3",
-      category_id: 2,
-      description: "Laptop ringan bertenaga chip Apple M3, baterai 18 jam",
-      price: 19500000,
-      stock: 7,
-      is_available: true,
-      category_name: "Laptop",
-      image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop",
-      specs: ["Chip Apple M3", "Baterai 18 jam", "13.6 inch", "8GB RAM"]
-    },
-    {
-      id: 5,
-      name: "ASUS ROG Zephyrus G14",
-      category_id: 2,
-      description: "Laptop gaming dengan Ryzen 9 & RTX 4060, layar 120Hz",
-      price: 24500000,
-      stock: 5,
-      is_available: true,
-      category_name: "Laptop",
-      image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop",
-      specs: ["Ryzen 9", "RTX 4060", "Layar 120Hz", "32GB RAM"]
-    },
-    {
-      id: 6,
-      name: "HP Pavilion 15",
-      category_id: 2,
-      description: "Laptop produktivitas dengan Intel i7 Gen 13, SSD 1TB",
-      price: 13500000,
-      stock: 6,
-      is_available: true,
-      category_name: "Laptop",
-      image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop",
-      specs: ["Intel i7 Gen 13", "SSD 1TB", "Layar Full HD", "Windows 11"]
-    },
-    {
-      id: 7,
-      name: "iPad Air 5",
-      category_id: 3,
-      description: "Tablet Apple dengan chip M1, layar Liquid Retina",
-      price: 11500000,
-      stock: 9,
-      is_available: true,
-      category_name: "Tablet",
-      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=300&fit=crop",
-      specs: ["Chip M1", "Apple Pencil 2", "10.9 inch", "WiFi 6"]
-    },
-    {
-      id: 8,
-      name: "Samsung Galaxy Tab S9",
-      category_id: 3,
-      description: "Tablet Android dengan layar AMOLED 120Hz, S Pen included",
-      price: 13000000,
-      stock: 8,
-      is_available: true,
-      category_name: "Tablet",
-      image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400&h=300&fit=crop",
-      specs: ["Layar AMOLED", "S Pen", "Baterai 8400mAh", "Android 13"]
-    },
-    {
-      id: 9,
-      name: "PlayStation 5",
-      category_id: 5,
-      description: "Konsol gaming next-gen dari Sony, 4K 120Hz, SSD ultra-fast",
-      price: 8800000,
-      stock: 3,
-      is_available: true,
-      category_name: "Gaming",
-      image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop",
-      specs: ["4K 120Hz", "SSD 825GB", "DualSense", "Backward Compatible"]
-    },
-    {
-      id: 10,
-      name: "Logitech MX Master 3",
-      category_id: 4,
-      description: "Mouse wireless ergonomis profesional, 4000 DPI, battery 70 hari",
-      price: 1600000,
-      stock: 15,
-      is_available: true,
-      category_name: "Aksesoris",
-      image: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=300&fit=crop",
-      specs: ["4000 DPI", "Baterai 70 hari", "Ergonomis", "Multi-Device"]
-    }
-  ];
-
-  // Data kategori sesuai database PostgreSQL
-  const databaseCategories = [
-    { id: 1, name: "Handphone", count: 3, icon: "📱" },
-    { id: 2, name: "Laptop", count: 3, icon: "💻" },
-    { id: 3, name: "Tablet", count: 2, icon: "📱" },
-    { id: 4, name: "Aksesoris", count: 1, icon: "🎧" },
-    { id: 5, name: "Gaming", count: 1, icon: "🎮" }
-  ];
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
@@ -153,15 +21,51 @@ function Dashboard() {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
 
-        // Menggunakan data produk dan kategori dari database
-        setProducts(databaseProducts);
-        setCategories(databaseCategories);
-
-        // Simulasi loading
-        setLoading(true);
-        setTimeout(() => {
-          setLoading(false);
-        }, 1000);
+        // AMBIL DATA PRODUK DARI BACKEND
+        const fetchProducts = async () => {
+          setLoading(true);
+          try {
+            const token = localStorage.getItem("token");
+            console.log("Token yang dikirim:", token); 
+            const response = await axios.get("http://localhost:3000/products", {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const productsData = response.data.products;
+            setProducts(productsData);
+            
+            // HITUNG JUMLAH PRODUK PER KATEGORI
+            const categoryCount = {};
+            productsData.forEach(product => {
+              const catName = product.category_name;
+              categoryCount[catName] = (categoryCount[catName] || 0) + 1;
+            });
+            
+            // SET CATEGORIES DENGAN DATA DARI DATABASE
+            const categoriesFromDB = [
+              { id: 1, name: "Handphone", icon: "📱" },
+              { id: 2, name: "Laptop", icon: "💻" },
+              { id: 3, name: "Tablet", icon: "📱" },
+              { id: 4, name: "Aksesoris", icon: "🎧" },
+              { id: 5, name: "Gaming", icon: "🎮" }
+            ];
+            
+            setCategories(categoriesFromDB.map(cat => ({
+              ...cat,
+              count: categoryCount[cat.name] || 0
+            })));
+            
+          } catch (error) {
+            console.error("Gagal mengambil produk:", error);
+            if (error.response?.status === 401) {
+              navigate("/");
+            }
+          } finally {
+            setLoading(false);
+          }
+        };
+        
+        fetchProducts();
 
       } catch (error) {
         navigate("/");
@@ -292,7 +196,7 @@ function Dashboard() {
             Temukan elektronik terbaru dengan kualitas terbaik dan harga kompetitif
           </p>
 
-          {/* SEARCH BAR - TAMBAHKAN INI */}
+          {/* SEARCH BAR */}
           <div className="search-container">
             <input
               type="text"
@@ -307,9 +211,6 @@ function Dashboard() {
           </div>
         </div>
 
-
-
-
         {/* Category Filters */}
         <div className="categories-section">
           <h2 className="section-title">📁 Kategori Produk</h2>
@@ -320,7 +221,7 @@ function Dashboard() {
             >
               <span className="category-icon-large">📦</span>
               <h3>Semua Produk</h3>
-              <p>{products.length} items</p>  {/* INI TETAP ADA */}
+              <p>{products.length} items</p>
             </button>
 
             {categories.map(category => (
@@ -331,6 +232,7 @@ function Dashboard() {
               >
                 <span className="category-icon-large">{category.icon}</span>
                 <h3>{category.name}</h3>
+                {category.count > 0 && <p>{category.count} products</p>}
               </button>
             ))}
           </div>
@@ -357,7 +259,7 @@ function Dashboard() {
                   {/* Product Image */}
                   <div className="product-image-container">
                     <img
-                      src={product.image}
+                      src={product.image_url}
                       alt={product.name}
                       className="product-image"
                       onError={(e) => {
