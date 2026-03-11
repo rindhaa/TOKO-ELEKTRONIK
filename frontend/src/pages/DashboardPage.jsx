@@ -320,7 +320,7 @@ function Dashboard() {
             >
               <span className="category-icon-large">📦</span>
               <h3>Semua Produk</h3>
-              <p>{products.length} items</p>
+              <p>{products.length} items</p>  {/* INI TETAP ADA */}
             </button>
 
             {categories.map(category => (
@@ -331,7 +331,6 @@ function Dashboard() {
               >
                 <span className="category-icon-large">{category.icon}</span>
                 <h3>{category.name}</h3>
-                <p>{category.count} products</p>
               </button>
             ))}
           </div>
