@@ -130,4 +130,74 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ========================== REGISTER ===============================
+// Endpoint: POST /auth/register
+// Mendaftarkan user baru (default role: Customer)
+
+router.post('/register', async (req, res) => {
+  try {
+    const { name, username, email, password, role = 'Customer' } = req.body;
+
+    console.log("📝 Register attempt for username:", username);
+
+    // Validasi input
+    if (!name || !username || !email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Semua field harus diisi' 
+      });
+    }
+
+    // Validasi panjang password
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password minimal 6 karakter'
+      });
+    }
+
+    // Cek apakah username atau email sudah terdaftar
+    const userCheck = await pool.query(
+      'SELECT * FROM users WHERE username = $1 OR email = $2',
+      [username, email]
+    );
+
+    if (userCheck.rows.length > 0) {
+      console.log("❌ Username/email already exists:", username, email);
+      return res.status(400).json({ 
+        success: false,
+        message: 'Username atau email sudah terdaftar' 
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("🔐 Password hashed successfully");
+
+    // Simpan user baru ke database
+    const newUser = await pool.query(
+      `INSERT INTO users (name, username, email, password, role) 
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING id, name, username, email, role, created_at`,
+      [name, username, email, hashedPassword, role]
+    );
+
+    console.log("✅ User registered successfully:", username);
+
+    res.status(201).json({
+      success: true,
+      message: 'Registrasi berhasil',
+      user: newUser.rows[0]
+    });
+
+  } catch (error) {
+    console.error("🔥 Error di /auth/register:", error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Terjadi kesalahan server',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 module.exports = router;

@@ -12,6 +12,16 @@ function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    categoryId: "",
+    description: "",
+    price: "",
+    stock: "",
+    image_url: "",
+    specs: ""
+  });
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -21,26 +31,27 @@ function Dashboard() {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
 
+
         // AMBIL DATA PRODUK DARI BACKEND
         const fetchProducts = async () => {
           setLoading(true);
           try {
             const token = localStorage.getItem("token");
-            console.log("Token yang dikirim:", token); 
+            console.log("Token yang dikirim:", token);
             const response = await axios.get("http://localhost:3000/products", {
               headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             const productsData = response.data.products;
             setProducts(productsData);
-            
+
             // HITUNG JUMLAH PRODUK PER KATEGORI
             const categoryCount = {};
             productsData.forEach(product => {
               const catName = product.category_name;
               categoryCount[catName] = (categoryCount[catName] || 0) + 1;
             });
-            
+
             // SET CATEGORIES DENGAN DATA DARI DATABASE
             const categoriesFromDB = [
               { id: 1, name: "Handphone", icon: "📱" },
@@ -49,12 +60,12 @@ function Dashboard() {
               { id: 4, name: "Aksesoris", icon: "🎧" },
               { id: 5, name: "Gaming", icon: "🎮" }
             ];
-            
+
             setCategories(categoriesFromDB.map(cat => ({
               ...cat,
               count: categoryCount[cat.name] || 0
             })));
-            
+
           } catch (error) {
             console.error("Gagal mengambil produk:", error);
             if (error.response?.status === 401) {
@@ -64,7 +75,7 @@ function Dashboard() {
             setLoading(false);
           }
         };
-        
+
         fetchProducts();
 
       } catch (error) {
@@ -74,6 +85,13 @@ function Dashboard() {
       navigate("/");
     }
   }, [navigate]);
+
+  // CEK ROLE USER - LETAKKAN DI SINI (setelah useEffect, sebelum return)
+  const userRole = user?.role;
+  const isAdmin = userRole === "Admin";
+  const isKasir = userRole === "Kasir";
+  const isCustomer = userRole === "Customer";
+  const isAdminOrKasir = isAdmin || isKasir;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -140,6 +158,79 @@ function Dashboard() {
 
     alert(`🛒 Checkout berhasil! Total: ${formatCurrency(getCartTotal())}`);
     setCart([]);
+  };
+
+  // TAMBAHKAN INI (Fungsi hapus produk)
+  const handleDelete = async (productId) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      await axios.delete(`http://localhost:3000/products/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setProducts(products.filter(p => p.id !== productId));
+      alert("✅ Produk berhasil dihapus!");
+
+    } catch (error) {
+      console.error("Gagal hapus produk:", error);
+      alert("❌ Gagal menghapus produk");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle input form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Submit form tambah produk
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      // Convert specs dari string ke array (pisah koma)
+      const specsArray = formData.specs.split(',').map(s => s.trim());
+
+      const response = await axios.post("http://localhost:3000/products", {
+        categoryId: parseInt(formData.categoryId),
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        image_url: formData.image_url,
+        specs: specsArray
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Tambah produk baru ke state
+      setProducts([...products, response.data.product]);
+
+      // Reset form & tutup modal
+      setFormData({
+        name: "", categoryId: "", description: "", price: "", stock: "", image_url: "", specs: ""
+      });
+      setShowForm(false);
+
+      alert("✅ Produk berhasil ditambahkan!");
+
+    } catch (error) {
+      console.error("Gagal tambah produk:", error);
+      alert("❌ Gagal menambah produk");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -238,6 +329,118 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* TOMBOL TAMBAH PRODUK (HANYA UNTUK ADMIN) */}
+        {isAdmin && (
+          <div className="add-product-container">
+            <button className="add-product-btn" onClick={() => setShowForm(true)}>
+              + Tambah Produk Baru
+            </button>
+          </div>
+        )}
+
+        {/* MODAL FORM TAMBAH PRODUK */}
+        {showForm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Tambah Produk Baru</h3>
+              <form onSubmit={handleAddProduct}>
+                <div className="form-group">
+                  <label>Nama Produk</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Kategori</label>
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Deskripsi</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows="3"
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Harga</label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Stok</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>URL Gambar</label>
+                  <input
+                    type="text"
+                    name="image_url"
+                    value={formData.image_url}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Spesifikasi (pisah dengan koma)</label>
+                  <input
+                    type="text"
+                    name="specs"
+                    value={formData.specs}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: Chip A17 Pro, Kamera 48MP, Baterai 1 hari"
+                    required
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>
+                    Batal
+                  </button>
+                  <button type="submit" className="submit-btn" disabled={loading}>
+                    {loading ? "Menyimpan..." : "Simpan Produk"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Products Section */}
         <div className="products-section">
           <div className="section-header">
@@ -313,13 +516,35 @@ function Dashboard() {
                       </div>
 
                       <div className="product-actions">
-                        <button
-                          className="action-btn buy-btn"
-                          onClick={() => addToCart(product)}
-                          disabled={!product.is_available || product.stock === 0}
-                        >
-                          🛒 Beli Sekarang
-                        </button>
+                        {isAdmin ? (
+                          /* UNTUK ADMIN */
+                          <>
+                            <button
+                              className="action-btn edit-btn"
+                              onClick={() => console.log("Edit produk", product.id)}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              className="action-btn delete-btn"
+                              onClick={() => handleDelete(product.id)}
+                            >
+                              🗑️ Hapus
+                            </button>
+                          </>
+                        ) : isKasir ? (
+                          /* UNTUK KASIR */
+                          <span className="read-only-badge">🔍 Hanya lihat</span>
+                        ) : (
+                          /* UNTUK CUSTOMER */
+                          <button
+                            className="action-btn buy-btn"
+                            onClick={() => addToCart(product)}
+                            disabled={!product.is_available || product.stock === 0}
+                          >
+                            🛒 Beli Sekarang
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

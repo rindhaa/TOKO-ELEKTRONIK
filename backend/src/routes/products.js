@@ -111,7 +111,7 @@ router.post('/', authenticate, requireRoles('Admin'), async (req, res) => {
   try {
     const { rows } = await db.query(
       'INSERT INTO products(category_id, name, description, price, stock, image_url, specs) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [categoryId || null, name, description || null, price, stock || 0, image_url || null, specs || '[]']
+      [categoryId || null, name, description || null, price, stock || 0, image_url || null, specs ? JSON.stringify(specs) : '[]']
     );
 
     // Untuk response POST, kita juga perlu ambil category_name
