@@ -22,6 +22,8 @@ function Dashboard() {
     image_url: "",
     specs: ""
   });
+  const [editingProduct, setEditingProduct] = useState(null);
+
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -86,7 +88,7 @@ function Dashboard() {
     }
   }, [navigate]);
 
-  // CEK ROLE USER - LETAKKAN DI SINI (setelah useEffect, sebelum return)
+  // CEK ROLE USER
   const userRole = user?.role;
   const isAdmin = userRole === "Admin";
   const isKasir = userRole === "Kasir";
@@ -144,6 +146,14 @@ function Dashboard() {
     alert(`✅ ${product.name} ditambahkan ke keranjang!`);
   };
 
+  // Fungsi beli langsung
+  const buyNow = (product) => {
+    // Langsung checkout dengan produk ini
+    setCart([{ ...product, quantity: 1 }]);
+    alert(`🛒 Checkout ${product.name}? (Fitur menyusul)`);
+    // nanti bisa navigate("/checkout")
+  };
+
   // Menghitung total harga keranjang
   const getCartTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -152,15 +162,16 @@ function Dashboard() {
   // Fungsi checkout
   const proceedToCheckout = () => {
     if (cart.length === 0) {
-      alert("Keranjang masih kosong!");
+      // alert("Keranjang masih kosong!"); // NONAKTIFKAN
       return;
     }
 
-    alert(`🛒 Checkout berhasil! Total: ${formatCurrency(getCartTotal())}`);
+    // alert(`🛒 Checkout berhasil! Total: ${formatCurrency(getCartTotal())}`); // NONAKTIFKAN
+    console.log("Checkout berhasil:", formatCurrency(getCartTotal()));
     setCart([]);
   };
 
-  // TAMBAHKAN INI (Fungsi hapus produk)
+  // Fungsi hapus produk
   const handleDelete = async (productId) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       return;
@@ -191,18 +202,17 @@ function Dashboard() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Submit form tambah produk
-  const handleAddProduct = async (e) => {
+  // Submit form (untuk tambah ATAU edit)
+  const handleSubmitProduct = async (e) => {
     e.preventDefault();
 
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      // Convert specs dari string ke array (pisah koma)
       const specsArray = formData.specs.split(',').map(s => s.trim());
 
-      const response = await axios.post("http://localhost:3000/products", {
+      const productData = {
         categoryId: parseInt(formData.categoryId),
         name: formData.name,
         description: formData.description,
@@ -210,27 +220,76 @@ function Dashboard() {
         stock: parseInt(formData.stock),
         image_url: formData.image_url,
         specs: specsArray
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      };
 
-      // Tambah produk baru ke state
-      setProducts([...products, response.data.product]);
+      let response;
+
+      if (editingProduct) {
+        // MODE EDIT: panggil PUT
+        response = await axios.put(
+          `http://localhost:3000/products/${editingProduct.id}`,
+          productData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Update produk di state
+        setProducts(products.map(p =>
+          p.id === editingProduct.id ? response.data.product : p
+        ));
+
+        alert("✅ Produk berhasil diupdate!");
+      } else {
+        // MODE TAMBAH: panggil POST
+        response = await axios.post("http://localhost:3000/products", productData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Tambah produk baru ke state
+        setProducts([...products, response.data.product]);
+
+        alert("✅ Produk berhasil ditambahkan!");
+      }
 
       // Reset form & tutup modal
-      setFormData({
-        name: "", categoryId: "", description: "", price: "", stock: "", image_url: "", specs: ""
-      });
+      resetForm();
       setShowForm(false);
-
-      alert("✅ Produk berhasil ditambahkan!");
+      setEditingProduct(null);
 
     } catch (error) {
-      console.error("Gagal tambah produk:", error);
-      alert("❌ Gagal menambah produk");
+      console.error("Gagal simpan produk:", error);
+      alert("❌ Gagal menyimpan produk");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Reset form ke kosong
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      categoryId: "",
+      description: "",
+      price: "",
+      stock: "",
+      image_url: "",
+      specs: ""
+    });
+    setEditingProduct(null);
+  };
+
+  // Fungsi untuk edit produk
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      categoryId: product.category_id, // Perhatikan: ini category_id, bukan categoryId
+      description: product.description || "",
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      image_url: product.image_url || "",
+      specs: product.specs ? product.specs.join(', ') : ""
+    });
+    setShowForm(true);
   };
 
   if (loading) {
@@ -332,18 +391,24 @@ function Dashboard() {
         {/* TOMBOL TAMBAH PRODUK (HANYA UNTUK ADMIN) */}
         {isAdmin && (
           <div className="add-product-container">
-            <button className="add-product-btn" onClick={() => setShowForm(true)}>
+            <button
+              className="add-product-btn"
+              onClick={() => {
+                resetForm();
+                setShowForm(true);
+              }}
+            >
               + Tambah Produk Baru
             </button>
           </div>
         )}
 
-        {/* MODAL FORM TAMBAH PRODUK */}
+        {/* MODAL FORM TAMBAH/EDIT PRODUK */}
         {showForm && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <h3>Tambah Produk Baru</h3>
-              <form onSubmit={handleAddProduct}>
+              <h3>{editingProduct ? "Edit Produk" : "Tambah Produk Baru"}</h3>
+              <form onSubmit={handleSubmitProduct}>
                 <div className="form-group">
                   <label>Nama Produk</label>
                   <input
@@ -429,11 +494,18 @@ function Dashboard() {
                 </div>
 
                 <div className="form-actions">
-                  <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => {
+                      setShowForm(false);
+                      resetForm();
+                    }}
+                  >
                     Batal
                   </button>
                   <button type="submit" className="submit-btn" disabled={loading}>
-                    {loading ? "Menyimpan..." : "Simpan Produk"}
+                    {loading ? "Menyimpan..." : (editingProduct ? "Update Produk" : "Simpan Produk")}
                   </button>
                 </div>
               </form>
@@ -521,7 +593,7 @@ function Dashboard() {
                           <>
                             <button
                               className="action-btn edit-btn"
-                              onClick={() => console.log("Edit produk", product.id)}
+                              onClick={() => handleEdit(product)}
                             >
                               ✏️ Edit
                             </button>
@@ -536,14 +608,23 @@ function Dashboard() {
                           /* UNTUK KASIR */
                           <span className="read-only-badge">🔍 Hanya lihat</span>
                         ) : (
-                          /* UNTUK CUSTOMER */
-                          <button
-                            className="action-btn buy-btn"
-                            onClick={() => addToCart(product)}
-                            disabled={!product.is_available || product.stock === 0}
-                          >
-                            🛒 Beli Sekarang
-                          </button>
+                          /* UNTUK CUSTOMER - 2 TOMBOL */
+                          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                            <button
+                              className="action-btn cart-btn"
+                              onClick={() => addToCart(product)}
+                              disabled={!product.is_available || product.stock === 0}
+                            >
+                              🛒 + Keranjang
+                            </button>
+                            <button
+                              className="action-btn buy-now-btn"
+                              onClick={() => buyNow(product)}
+                              disabled={!product.is_available || product.stock === 0}
+                            >
+                              ⚡ Beli
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -559,27 +640,6 @@ function Dashboard() {
             </div>
           )}
         </div>
-
-        {/* Cart Summary (Floating) */}
-        {cart.length > 0 && (
-          <div className="cart-summary">
-            <div className="cart-summary-content">
-              <div className="cart-items-count">
-                <span className="cart-icon">🛒</span>
-                <span>{cart.length} item di keranjang</span>
-              </div>
-              <div className="cart-total-amount">
-                Total: <strong>{formatCurrency(getCartTotal())}</strong>
-              </div>
-              <button
-                className="checkout-btn"
-                onClick={proceedToCheckout}
-              >
-                💳 Checkout Sekarang
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Footer */}
         <footer className="dashboard-footer">

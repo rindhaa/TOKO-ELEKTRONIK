@@ -169,8 +169,17 @@ router.put('/:id', authenticate, requireRoles('Admin'), async (req, res) => {
            image_url=$5, specs=$6, is_available=COALESCE($7,is_available), 
            updated_at=NOW() 
        WHERE id = $8`,
-      [categoryId || null, description || null, price, stock, image_url, specs, is_available, productId]
-    );
+      [
+    categoryId || null, 
+    description || null, 
+    price, 
+    stock, 
+    image_url, 
+    specs ? JSON.stringify(specs) : '[]',  
+    is_available, 
+    productId
+  ]
+);
 
     if (!rowCount) return res.status(404).json({ message: 'Produk tidak ditemukan.' });
 

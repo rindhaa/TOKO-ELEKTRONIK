@@ -42,11 +42,11 @@ function Login() {
       // ALERT UNTUK LOGIN BERHASIL 
       window.alert(`Login Berhasil! Selamat datang ${user.username || user.name || "Artic Life"}`);
 
-      // Redirect berdasarkan role dari database
-      if (user.role === "Admin" || user.role === "Kasir") {
+      // Redirect semua role yang valid ke dashboard
+      if (user.role === "Admin" || user.role === "Kasir" || user.role === "Customer") {
         navigate("/dashboard");
       } else {
-        setError("Hanya Admin dan Kasir yang dapat mengakses dashboard");
+        setError("Role tidak dikenal");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
