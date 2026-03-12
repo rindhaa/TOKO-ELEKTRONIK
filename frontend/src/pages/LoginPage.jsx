@@ -28,7 +28,7 @@ function Login() {
 
     try {
       // LANGSUNG KE BACKEND YANG CONNECT KE POSTGRESQL
-      const response = await axios.post("http://localhost:3000/auth/login", {
+      const response = await axios.post("https://toko-elektronik-production-255e.up.railway.app/auth/login", {
         username: formData.username,
         password: formData.password
       });

@@ -43,7 +43,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3000/auth/register", {
+      const response = await axios.post("https://toko-elektronik-production-255e.up.railway.app/auth/register", {
         name: formData.name,
         username: formData.username,
         email: formData.email,

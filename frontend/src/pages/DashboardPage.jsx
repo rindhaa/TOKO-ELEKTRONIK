@@ -40,7 +40,7 @@ function Dashboard() {
           try {
             const token = localStorage.getItem("token");
             console.log("Token yang dikirim:", token);
-            const response = await axios.get("http://localhost:3000/products", {
+            const response = await axios.get("https://toko-elektronik-production-255e.up.railway.app/products", {
               headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -181,7 +181,7 @@ function Dashboard() {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      await axios.delete(`http://localhost:3000/products/${productId}`, {
+      await axios.delete(`https://toko-elektronik-production-255e.up.railway.app/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -227,7 +227,7 @@ function Dashboard() {
       if (editingProduct) {
         // MODE EDIT: panggil PUT
         response = await axios.put(
-          `http://localhost:3000/products/${editingProduct.id}`,
+          `https://toko-elektronik-production-255e.up.railway.app/products/${editingProduct.id}`,
           productData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -240,7 +240,7 @@ function Dashboard() {
         alert("✅ Produk berhasil diupdate!");
       } else {
         // MODE TAMBAH: panggil POST
-        response = await axios.post("http://localhost:3000/products", productData, {
+        response = await axios.post("https://toko-elektronik-production-255e.up.railway.app/products", productData, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
