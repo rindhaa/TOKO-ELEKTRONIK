@@ -27,22 +27,18 @@ function Login() {
     setError("");
 
     try {
-      // LANGSUNG KE BACKEND YANG CONNECT KE POSTGRESQL
       const response = await axios.post("https://toko-elektronik-production-255e.up.railway.app/auth/login", {
         username: formData.username,
         password: formData.password
       });
 
-      // Simpan data dari response backend
       const { token, user } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // ALERT UNTUK LOGIN BERHASIL 
       window.alert(`Login Berhasil! Selamat datang ${user.username || user.name || "Artic Life"}`);
 
-      // Redirect semua role yang valid ke dashboard
       if (user.role === "Admin" || user.role === "Kasir" || user.role === "Customer") {
         navigate("/dashboard");
       } else {
@@ -54,7 +50,6 @@ function Login() {
     } catch (err) {
       console.error("Login error:", err);
 
-      // ALERT UNTUK LOGIN GAGAL
       const errorMessage = err.response?.data?.message ||
         err.response?.data?.error ||
         "Login gagal. Periksa username dan password.";
@@ -66,40 +61,63 @@ function Login() {
       setLoading(false);
     }
   };
+  
 
-  // Generate soft stars (hanya untuk UI)
-  const stars = Array.from({ length: 30 }).map((_, i) => ({
+  // Generate partikel cahaya (20 butir)
+  const particles = Array.from({ length: 20 }).map((_, i) => ({
     id: i,
-    size: Math.random() * 2 + 1,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    delay: Math.random() * 8
+    size: Math.random() * 6 + 2,
+    left: Math.random() * 100,
+    delay: Math.random() * 10
+  }));
+
+  // Generate bintang 50 butir dengan warna random
+  const stars = Array.from({ length: 50 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 4 + 1,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: Math.random() * 4 + 3
   }));
 
   return (
     <div className="login-container">
-      {/* Background Stars */}
-      <div className="stars">
-        {stars.map(star => (
-          <div
-            key={star.id}
-            className="star"
-            style={{
-              width: `${star.size}px`,
-              height: `${star.size}px`,
-              left: `${star.x}%`,
-              top: `${star.y}%`,
-              animationDelay: `${star.delay}s`,
-              backgroundColor: `rgba(123, 104, 238, ${0.1 + Math.random() * 0.1})`
-            }}
-          />
-        ))}
-      </div>
+      {/* Partikel cahaya melayang */}
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="light-particle"
+          style={{
+            left: `${particle.left}%`,
+            animationDelay: `${particle.delay}s`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+          }}
+        />
+      ))}
 
-      {/* Floating Tech Bubbles */}
-      <div className="tech-bubble bubble-1"></div>
-      <div className="tech-bubble bubble-2"></div>
-      <div className="tech-bubble bubble-3"></div>
+      {/* Bubble kecil (4 buah) */}
+      <div className="bubble bubble-1"></div>
+      <div className="bubble bubble-2"></div>
+      <div className="bubble bubble-3"></div>
+      <div className="bubble bubble-4"></div>
+
+      {/* Bintang 50 butir dengan warna variasi */}
+      {stars.map((star) => (
+        <div
+          key={`star-${star.id}`}
+          className="star-particle"
+          style={{
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            left: `${star.left}%`,
+            top: `${star.top}%`,
+            animationDelay: `${star.delay}s`,
+            '--twinkle-duration': `${star.duration}s`
+          }}
+        />
+      ))}
 
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-header">
@@ -129,7 +147,7 @@ function Login() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">🔑</span>
           <input
             type="password"
             name="password"
@@ -149,7 +167,7 @@ function Login() {
         >
           {loading ? (
             <>
-              <span className="loading-spinner"></span>
+              <span className="loading-spinner">⚡</span>
               Memproses...
             </>
           ) : (
@@ -158,13 +176,9 @@ function Login() {
         </button>
 
         <div className="login-footer">
-          <p style={{ marginBottom: '15px' }}>
+          <p>
             Belum punya akun? <Link to="/register">Daftar di sini</Link>
           </p>
-          <p className="demo-title">Database Credentials:</p>
-          <div className="demo-credentials">
-            <div><small>Data langsung dari PostgreSQL database</small></div>
-          </div>
         </div>
       </form>
     </div>

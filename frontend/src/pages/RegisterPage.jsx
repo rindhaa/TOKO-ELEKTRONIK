@@ -71,47 +71,68 @@ function Register() {
     }
   };
 
-  // Generate soft stars
-  const stars = Array.from({ length: 30 }).map((_, i) => ({
+  // Generate partikel cahaya (20 butir)
+  const particles = Array.from({ length: 20 }).map((_, i) => ({
     id: i,
-    size: Math.random() * 2 + 1,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    delay: Math.random() * 8
+    size: Math.random() * 6 + 2,
+    left: Math.random() * 100,
+    delay: Math.random() * 10
+  }));
+
+  // Generate bintang 50 butir dengan warna random
+  const stars = Array.from({ length: 50 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 4 + 1,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: Math.random() * 4 + 3
   }));
 
   return (
     <div className="register-container">
-      {/* Background Stars */}
-      <div className="stars">
-        {stars.map(star => (
-          <div 
-            key={star.id}
-            className="star"
-            style={{
-              width: `${star.size}px`,
-              height: `${star.size}px`,
-              left: `${star.x}%`,
-              top: `${star.y}%`,
-              animationDelay: `${star.delay}s`,
-              backgroundColor: `rgba(123, 104, 238, ${0.1 + Math.random() * 0.1})`
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Floating Tech Bubbles */}
-      <div className="tech-bubble bubble-1"></div>
-      <div className="tech-bubble bubble-2"></div>
-      <div className="tech-bubble bubble-3"></div>
-      
+      {/* Partikel cahaya melayang */}
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="light-particle"
+          style={{
+            left: `${particle.left}%`,
+            animationDelay: `${particle.delay}s`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+          }}
+        />
+      ))}
+
+      {/* Bubble kecil (4 buah) */}
+      <div className="bubble bubble-1"></div>
+      <div className="bubble bubble-2"></div>
+      <div className="bubble bubble-3"></div>
+      <div className="bubble bubble-4"></div>
+
+      {/* Bintang 50 butir dengan warna variasi */}
+      {stars.map((star) => (
+        <div
+          key={`star-${star.id}`}
+          className="star-particle"
+          style={{
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            left: `${star.left}%`,
+            top: `${star.top}%`,
+            animationDelay: `${star.delay}s`,
+            '--twinkle-duration': `${star.duration}s`
+          }}
+        />
+      ))}
+
       <form className="register-form" onSubmit={handleSubmit}>
         <div className="register-header">
-          <div className="register-icon">📝</div>
           <h2>Buat Akun Baru</h2>
           <p className="register-subtitle">Daftar untuk berbelanja di Electro Store</p>
         </div>
-        
+
         {error && (
           <div className="error-message show">
             {error}
@@ -123,7 +144,7 @@ function Register() {
             {success}
           </div>
         )}
-        
+
         <div className="input-group">
           <span className="input-icon">👤</span>
           <input
@@ -138,7 +159,7 @@ function Register() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔤</span>
+          <span className="input-icon">👑</span>
           <input
             type="text"
             name="username"
@@ -162,7 +183,7 @@ function Register() {
             disabled={loading}
           />
         </div>
-        
+
         <div className="input-group">
           <span className="input-icon">🔒</span>
           <input
@@ -188,23 +209,22 @@ function Register() {
             disabled={loading}
           />
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           className={`register-button ${loading ? 'loading' : ''}`}
           disabled={loading}
         >
           {loading ? (
             <>
-              <span className="loading-spinner"></span>
+              <span className="loading-spinner">⚡</span>
               Mendaftar...
             </>
           ) : (
             "Daftar"
           )}
         </button>
-        
-        {/* TOMBOL KEMBALI KE LOGIN - UDAH ADA */}
+
         <div className="register-footer">
           <p>Sudah punya akun? <Link to="/login">Login di sini</Link></p>
         </div>
